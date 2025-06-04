@@ -1,12 +1,13 @@
-import express from 'express';
-import { handleGetAllContacts } from '../controllers/contactsController.js';
+import express from "express";
+import {
+  handleGetAllContacts,
+  handleGetContactById,
+} from "../controllers/contactsController.js";
 
 const router = express.Router();
-console.log('--- Mounting /contacts router');
+console.log("--- Mounting /contacts router");
 
-// ✅ правильно:
-router.get('/', handleGetAllContacts);
-
-
+router.get("/", handleGetAllContacts);
+router.get("/:contactId", handleGetContactById);
 
 export default router;

@@ -16,8 +16,8 @@ export function setupServer() {
   app.use(pino());
   app.use(express.json());
 
-  app.use("/contacts", contactsRouter); // адмінський CRUD
-  app.use("/public/contacts", publicContactsRouter); // публічний доступ (GET only)
+  app.use("/contacts", contactsRouter);
+  app.use("/public/contacts", publicContactsRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

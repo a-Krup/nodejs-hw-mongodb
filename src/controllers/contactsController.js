@@ -1,8 +1,5 @@
 import createError from "http-errors";
-import {
-  getAllContacts,
-  getContactById,
-} from "../services/contacts.js";
+import { getAllContacts, getContactById } from "../services/contacts.js";
 
 export async function handleGetAllContacts(req, res, next) {
   try {

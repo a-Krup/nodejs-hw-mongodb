@@ -7,7 +7,6 @@ import {
   deleteContact as deleteContactService,
 } from "../services/contacts.js";
 
-// GET всі контакти
 export const getAll = async (req, res) => {
   const contacts = await getAllContacts();
 
@@ -18,7 +17,6 @@ export const getAll = async (req, res) => {
   });
 };
 
-// GET контакт по id
 export const getById = async (req, res) => {
   const { contactId } = req.params;
   const contact = await getContactById(contactId);
@@ -34,7 +32,6 @@ export const getById = async (req, res) => {
   });
 };
 
-// POST - створення нового контакту
 export const create = async (req, res) => {
   const { name, phoneNumber, contactType, email, isFavourite } = req.body;
 
@@ -60,7 +57,6 @@ export const create = async (req, res) => {
   });
 };
 
-// PATCH - оновлення контакту
 export const update = async (req, res) => {
   const { contactId } = req.params;
   const updateData = req.body;
@@ -78,7 +74,6 @@ export const update = async (req, res) => {
   });
 };
 
-// DELETE - видалення контакту
 export const remove = async (req, res) => {
   const { contactId } = req.params;
 
@@ -88,6 +83,5 @@ export const remove = async (req, res) => {
     throw createError(404, "Contact not found");
   }
 
-  // 204 - No Content, без тіла відповіді
   res.status(204).send();
 };

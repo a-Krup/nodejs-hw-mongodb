@@ -2,7 +2,10 @@ import express from "express";
 import cors from "cors";
 import pino from "pino-http";
 import dotenv from "dotenv";
-import contactsRouter from "./routes/contactsRouter.js";
+import contactsRouter from "./routes/contacts.js";
+import publicContactsRouter from "./routes/contactsRouter.js";
+import { notFoundHandler } from "./middlewares/notFoundHandler.js";
+import { errorHandler } from "./middlewares/errorHandler.js";
 
 dotenv.config();
 
@@ -13,18 +16,11 @@ export function setupServer() {
   app.use(pino());
   app.use(express.json());
 
-  app.use("/contacts", contactsRouter);
+  app.use("/contacts", contactsRouter); // адмінський CRUD
+  app.use("/public/contacts", publicContactsRouter); // публічний доступ (GET only)
 
-  app.all("*", (req, res) => {
-    res.status(404).json({ message: "Not found" });
-  });
-
-  app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res
-      .status(500)
-      .json({ message: "Something went wrong", error: err.message });
-  });
+  app.use(notFoundHandler);
+  app.use(errorHandler);
 
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {

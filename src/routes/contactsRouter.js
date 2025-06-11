@@ -5,7 +5,6 @@ import {
 } from "../controllers/contactsController.js";
 
 const router = express.Router();
-console.log("--- Mounting /contacts router");
 
 router.get("/", handleGetAllContacts);
 router.get("/:contactId", handleGetContactById);

@@ -19,6 +19,10 @@ export function setupServer() {
   app.use("/contacts", contactsRouter);
   app.use("/public/contacts", publicContactsRouter);
 
+  app.get("/", (req, res) => {
+    res.send({ message: "Contacts API is running" });
+  });
+
   app.use(notFoundHandler);
   app.use(errorHandler);
 

@@ -2,8 +2,9 @@ import express from "express";
 import cors from "cors";
 import pino from "pino-http";
 import dotenv from "dotenv";
+
 import contactsRouter from "./routes/contacts.js";
-import publicContactsRouter from "./routes/contactsRouter.js";
+
 import { notFoundHandler } from "./middlewares/notFoundHandler.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 
@@ -17,7 +18,6 @@ export function setupServer() {
   app.use(express.json());
 
   app.use("/contacts", contactsRouter);
-  app.use("/public/contacts", publicContactsRouter);
 
   app.get("/", (req, res) => {
     res.send({ message: "Contacts API is running" });

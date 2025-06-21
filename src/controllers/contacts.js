@@ -11,23 +11,21 @@ export const getAll = async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const perPage = parseInt(req.query.perPage) || 10;
   const sortBy = req.query.sortBy || "name";
-  const sortOrder = req.query.sortOrder || "asc";
+  const sortOrder = req.query.sortOrder === "desc" ? -1 : 1;
 
   const result = await getAllContacts(page, perPage, sortBy, sortOrder);
 
   res.status(200).json({
     status: 200,
     message: "Successfully found contacts!",
-    data: result.data,
-    meta: {
+    data: {
+      data: result.data,
       page: result.page,
       perPage: result.perPage,
       totalItems: result.totalItems,
       totalPages: result.totalPages,
       hasPreviousPage: result.hasPreviousPage,
       hasNextPage: result.hasNextPage,
-      sortBy,
-      sortOrder,
     },
   });
 };

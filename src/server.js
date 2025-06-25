@@ -6,6 +6,8 @@ import dotenv from "dotenv";
 import contactsRouter from "./routes/contacts.js";
 import authRouter from "./routes/auth.js"; // ✅ Додано
 
+import cookieParser from "cookie-parser";
+
 import { notFoundHandler } from "./middlewares/notFoundHandler.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 
@@ -20,6 +22,8 @@ export function setupServer() {
 
   // ✅ Додано роут для авторизації
   app.use("/auth", authRouter);
+
+  app.use(cookieParser());
 
   app.use("/contacts", contactsRouter);
 

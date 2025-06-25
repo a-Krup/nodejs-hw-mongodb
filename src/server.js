@@ -4,6 +4,7 @@ import pino from "pino-http";
 import dotenv from "dotenv";
 
 import contactsRouter from "./routes/contacts.js";
+import authRouter from "./routes/auth.js"; // ✅ Додано
 
 import { notFoundHandler } from "./middlewares/notFoundHandler.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
@@ -16,6 +17,9 @@ export function setupServer() {
   app.use(cors());
   app.use(pino());
   app.use(express.json());
+
+  // ✅ Додано роут для авторизації
+  app.use("/auth", authRouter);
 
   app.use("/contacts", contactsRouter);
 

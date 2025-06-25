@@ -1,23 +1,47 @@
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import createHttpError from "http-errors";
 import User from "../models/User.js";
+import Session from "../models/Session.js";
 
-export const registerUser = async ({ name, email, password }) => {
-  const existingUser = await User.findOne({ email });
+const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET || "access_secret";
+const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || "refresh_secret";
 
-  if (existingUser) {
-    throw createHttpError(409, "Email in use");
+export const loginUser = async (email, password) => {
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw createHttpError(401, "Invalid email or password");
   }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const isMatch = await bcrypt.compare(password, user.password);
 
-  const newUser = new User({
-    name,
-    email,
-    password: hashedPassword,
+  if (!isMatch) {
+    throw createHttpError(401, "Invalid email or password");
+  }
+
+  const accessTokenValidFor = 15 * 60 * 1000; // 15 хв
+  const refreshTokenValidFor = 30 * 24 * 60 * 60 * 1000; // 30 днів
+
+  const accessToken = jwt.sign({ userId: user._id }, ACCESS_TOKEN_SECRET, {
+    expiresIn: "15m",
   });
 
-  await newUser.save();
+  const refreshToken = jwt.sign({ userId: user._id }, REFRESH_TOKEN_SECRET, {
+    expiresIn: "30d",
+  });
 
-  return newUser;
+  // Видаляємо стару сесію (якщо є)
+  await Session.deleteMany({ userId: user._id });
+
+  // Створюємо нову сесію
+  await Session.create({
+    userId: user._id,
+    accessToken,
+    refreshToken,
+    accessTokenValidUntil: new Date(Date.now() + accessTokenValidFor),
+    refreshTokenValidUntil: new Date(Date.now() + refreshTokenValidFor),
+  });
+
+  return { accessToken, refreshToken };
 };

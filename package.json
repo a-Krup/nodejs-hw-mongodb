@@ -36,6 +36,7 @@
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.15.1",
-    "pino-http": "^10.4.0"
+    "pino-http": "^10.4.0",
+    "validator": "^13.15.15"
   }
 }

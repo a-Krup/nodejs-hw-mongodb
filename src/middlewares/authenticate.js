@@ -6,14 +6,14 @@ const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET || "access_secret";
 
 const authenticate = async (req, res, next) => {
   try {
-    
-    let token = req.cookies?.accessToken;
-    console.log("Token from cookies:", token);
+    let token = null;
 
-   
-    if (!token && req.headers.authorization?.startsWith("Bearer ")) {
+    if (req.headers.authorization?.startsWith("Bearer ")) {
       token = req.headers.authorization.split(" ")[1];
       console.log("Token from Authorization header:", token);
+    } else if (req.cookies?.accessToken) {
+      token = req.cookies.accessToken;
+      console.log("Token from cookies:", token);
     }
 
     if (!token) {
@@ -21,14 +21,11 @@ const authenticate = async (req, res, next) => {
       throw createHttpError(401, "Access token is missing");
     }
 
-    
-
     console.log("Token received:", token);
-       const decoded = jwt.verify(token, ACCESS_TOKEN_SECRET);
-console.log("Decoded token:", decoded);
+    const decoded = jwt.verify(token, ACCESS_TOKEN_SECRET);
+    console.log("Decoded token:", decoded);
 
     const user = await User.findById(decoded.userId);
-
     if (!user) {
       console.log("User not found for id:", decoded.userId);
       throw createHttpError(401, "User not found");

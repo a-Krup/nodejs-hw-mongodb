@@ -7,12 +7,10 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET || "access_secret";
-const REFRESH_TOKEN_SECRET =
-  process.env.REFRESH_TOKEN_SECRET || "refresh_secret";
+const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || "refresh_secret";
 
 export const registerUser = async ({ name, email, password }) => {
   const existingUser = await User.findOne({ email });
-
   if (existingUser) {
     throw createHttpError(409, "Email already in use");
   }
@@ -28,21 +26,19 @@ export const registerUser = async ({ name, email, password }) => {
   return newUser;
 };
 
-export const loginUser = async (email, password, res) => {
+export const loginUser = async (email, password) => {
   const user = await User.findOne({ email });
-
   if (!user) {
     throw createHttpError(401, "Invalid email or password");
   }
 
   const isMatch = await bcrypt.compare(password, user.password);
-
   if (!isMatch) {
     throw createHttpError(401, "Invalid email or password");
   }
 
   const accessTokenValidFor = 15 * 60 * 1000;
-  const refreshTokenValidFor = 30 * 24 * 60 * 60 * 1000;
+  const refreshTokenValidFor = 30 * 24 * 60 * 60 * 1000; 
 
   const accessToken = jwt.sign({ userId: user._id }, ACCESS_TOKEN_SECRET, {
     expiresIn: "15m",
@@ -52,9 +48,10 @@ export const loginUser = async (email, password, res) => {
     expiresIn: "30d",
   });
 
+  
   await Session.deleteMany({ userId: user._id });
 
-  await Session.create({
+  const session = await Session.create({
     userId: user._id,
     accessToken,
     refreshToken,
@@ -62,21 +59,13 @@ export const loginUser = async (email, password, res) => {
     refreshTokenValidUntil: new Date(Date.now() + refreshTokenValidFor),
   });
 
-  res.cookie("accessToken", accessToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "Strict",
-    maxAge: accessTokenValidFor,
-  });
-
-  res.cookie("refreshToken", refreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "Strict",
-    maxAge: refreshTokenValidFor,
-  });
-
-  res.json({ message: "User logged in successfully" });
+  return {
+    accessToken,
+    refreshToken,
+    accessTokenValidFor,
+    refreshTokenValidFor,
+    sessionId: session._id.toString(),
+  };
 };
 
 export const refreshUserSession = async (refreshToken) => {
@@ -85,7 +74,6 @@ export const refreshUserSession = async (refreshToken) => {
     const userId = payload.userId;
 
     const session = await Session.findOne({ userId, refreshToken });
-
     if (!session) {
       throw createHttpError(401, "Session not found or expired");
     }
@@ -93,8 +81,6 @@ export const refreshUserSession = async (refreshToken) => {
     if (new Date() > session.refreshTokenValidUntil) {
       throw createHttpError(401, "Refresh token expired");
     }
-
-    await Session.deleteMany({ userId });
 
     const accessTokenValidFor = 15 * 60 * 1000;
     const refreshTokenValidFor = 30 * 24 * 60 * 60 * 1000;
@@ -107,13 +93,12 @@ export const refreshUserSession = async (refreshToken) => {
       expiresIn: "30d",
     });
 
-    await Session.create({
-      userId,
-      accessToken: newAccessToken,
-      refreshToken: newRefreshToken,
-      accessTokenValidUntil: new Date(Date.now() + accessTokenValidFor),
-      refreshTokenValidUntil: new Date(Date.now() + refreshTokenValidFor),
-    });
+    session.accessToken = newAccessToken;
+    session.refreshToken = newRefreshToken;
+    session.accessTokenValidUntil = new Date(Date.now() + accessTokenValidFor);
+    session.refreshTokenValidUntil = new Date(Date.now() + refreshTokenValidFor);
+
+    await session.save();
 
     return { accessToken: newAccessToken, refreshToken: newRefreshToken };
   } catch (err) {

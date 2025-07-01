@@ -1,9 +1,8 @@
 export function errorHandler(err, req, res, next) {
-  console.error(err);
-
+  console.error('Error caught:', err);
   res.status(err.status || 500).json({
     status: err.status || 500,
-    message: "Something went wrong",
-    data: err.message,
+    message: err.message || 'Something went wrong',
+    data: err.data || err.stack,
   });
 }

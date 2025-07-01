@@ -22,7 +22,12 @@ const sessionSchema = new mongoose.Schema({
     type: Date,
     required: [true, "Refresh token expiration date is required"],
   },
-});
+},
+{
+    timestamps: true, 
+  }
+
+);
 
 const Session = mongoose.model("Session", sessionSchema);
 

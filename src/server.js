@@ -6,20 +6,23 @@ import cookieParser from "cookie-parser";
 
 import contactsRouter from "./routes/contacts.js";
 import authRouter from "./routes/auth.js";
+import authenticate from "./middlewares/authenticate.js";
 
 import { notFoundHandler } from "./middlewares/notFoundHandler.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
-import authenticate from "./middlewares/authenticate.js";
 
 dotenv.config();
 
 export function setupServer() {
   const app = express();
 
+  console.log("Current NODE_ENV:", process.env.NODE_ENV);
+
   const corsOptions = {
-    origin: "http://localhost:3000",
+    origin: process.env.CLIENT_URL || "http://localhost:3000",
     credentials: true,
   };
+
   app.use(cors(corsOptions));
 
   app.use(pino());

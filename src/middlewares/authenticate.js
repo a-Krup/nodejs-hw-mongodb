@@ -6,17 +6,31 @@ const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET || "access_secret";
 
 const authenticate = async (req, res, next) => {
   try {
-    const token = req.cookies.accessToken;
+    
+    let token = req.cookies?.accessToken;
+    console.log("Token from cookies:", token);
+
+   
+    if (!token && req.headers.authorization?.startsWith("Bearer ")) {
+      token = req.headers.authorization.split(" ")[1];
+      console.log("Token from Authorization header:", token);
+    }
 
     if (!token) {
+      console.log("Access token is missing");
       throw createHttpError(401, "Access token is missing");
     }
 
-    const decoded = jwt.verify(token, ACCESS_TOKEN_SECRET);
+    
+
+    console.log("Token received:", token);
+       const decoded = jwt.verify(token, ACCESS_TOKEN_SECRET);
+console.log("Decoded token:", decoded);
 
     const user = await User.findById(decoded.userId);
 
     if (!user) {
+      console.log("User not found for id:", decoded.userId);
       throw createHttpError(401, "User not found");
     }
 
@@ -24,8 +38,10 @@ const authenticate = async (req, res, next) => {
     next();
   } catch (err) {
     if (err.name === "TokenExpiredError") {
+      console.log("Access token expired");
       return next(createHttpError(401, "Access token expired"));
     }
+    console.log("Invalid access token error:", err);
     return next(createHttpError(401, "Invalid access token"));
   }
 };

@@ -13,7 +13,7 @@ export const createContactSchema = Joi.object({
 export const updateContactSchema = Joi.object({
   name: stringField.optional(),
   phoneNumber: stringField.optional(),
-  email: stringField.email().min(3).max(50).optional(),
+  email: Joi.string().email().min(3).max(50).optional(),
   isFavourite: Joi.boolean().optional(),
   contactType: Joi.string().valid("work", "home", "personal").optional(),
 })

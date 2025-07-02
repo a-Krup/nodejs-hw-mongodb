@@ -6,6 +6,8 @@ import {
   logoutUser,
 } from "../services/auth.js";
 
+const isProd = process.env.NODE_ENV === "production";
+
 const registerSchema = Joi.object({
   name: Joi.string().required(),
   email: Joi.string().email().required(),
@@ -16,8 +18,6 @@ const loginSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string().required(),
 });
-
-const isProd = process.env.NODE_ENV === "production";
 
 export const register = async (req, res, next) => {
   try {
@@ -103,14 +103,17 @@ export const refreshSession = async (req, res, next) => {
       });
     }
 
-    const { accessToken, refreshToken: newRefreshToken } =
-      await refreshUserSession(refreshToken);
+    const {
+      accessToken,
+      refreshToken: newRefreshToken,
+      refreshTokenValidFor,
+    } = await refreshUserSession(refreshToken);
 
     res.cookie("refreshToken", newRefreshToken, {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? "None" : "Strict",
-      maxAge: 30 * 24 * 60 * 60 * 1000,
+      maxAge: refreshTokenValidFor,
     });
 
     res.status(200).json({
@@ -126,6 +129,7 @@ export const refreshSession = async (req, res, next) => {
 export const logout = async (req, res, next) => {
   try {
     const refreshToken = req.cookies?.refreshToken;
+
     const sessionId = req.user?.sessionId;
 
     if (!refreshToken || !sessionId) {

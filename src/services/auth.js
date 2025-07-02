@@ -7,7 +7,8 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET || "access_secret";
-const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || "refresh_secret";
+const REFRESH_TOKEN_SECRET =
+  process.env.REFRESH_TOKEN_SECRET || "refresh_secret";
 
 export const registerUser = async ({ name, email, password }) => {
   const existingUser = await User.findOne({ email });
@@ -37,24 +38,22 @@ export const loginUser = async (email, password) => {
     throw createHttpError(401, "Invalid email or password");
   }
 
-  const accessTokenValidFor = 15 * 60 * 1000; 
-  const refreshTokenValidFor = 30 * 24 * 60 * 60 * 1000; 
+  const accessTokenValidFor = 15 * 60 * 1000;
+  const refreshTokenValidFor = 30 * 24 * 60 * 60 * 1000;
 
-  
   await Session.deleteMany({ userId: user._id });
 
-  
-  const session = await Session.create({
+  const sessionTemp = new Session({
     userId: user._id,
-    accessToken: "",
-    refreshToken: "",
+    accessToken: "temp",
+    refreshToken: "temp",
     accessTokenValidUntil: new Date(Date.now() + accessTokenValidFor),
     refreshTokenValidUntil: new Date(Date.now() + refreshTokenValidFor),
   });
+  await sessionTemp.validate();
 
-  const sessionId = session._id.toString();
+  const sessionId = sessionTemp._id.toString();
 
-  
   const accessToken = jwt.sign(
     { userId: user._id, sessionId },
     ACCESS_TOKEN_SECRET,
@@ -67,10 +66,10 @@ export const loginUser = async (email, password) => {
     { expiresIn: "30d" }
   );
 
-  
-  session.accessToken = accessToken;
-  session.refreshToken = refreshToken;
-  await session.save();
+  sessionTemp.accessToken = accessToken;
+  sessionTemp.refreshToken = refreshToken;
+
+  await sessionTemp.save();
 
   return {
     accessToken,
@@ -86,7 +85,11 @@ export const refreshUserSession = async (refreshToken) => {
     const payload = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET);
     const { userId, sessionId } = payload;
 
-    const session = await Session.findOne({ userId, _id: sessionId, refreshToken });
+    const session = await Session.findOne({
+      userId,
+      _id: sessionId,
+      refreshToken,
+    });
     if (!session) {
       throw createHttpError(401, "Session not found or expired");
     }
@@ -98,7 +101,6 @@ export const refreshUserSession = async (refreshToken) => {
     const accessTokenValidFor = 15 * 60 * 1000;
     const refreshTokenValidFor = 30 * 24 * 60 * 60 * 1000;
 
-    
     const newAccessToken = jwt.sign(
       { userId, sessionId },
       ACCESS_TOKEN_SECRET,
@@ -111,11 +113,12 @@ export const refreshUserSession = async (refreshToken) => {
       { expiresIn: "30d" }
     );
 
-    
     session.accessToken = newAccessToken;
     session.refreshToken = newRefreshToken;
     session.accessTokenValidUntil = new Date(Date.now() + accessTokenValidFor);
-    session.refreshTokenValidUntil = new Date(Date.now() + refreshTokenValidFor);
+    session.refreshTokenValidUntil = new Date(
+      Date.now() + refreshTokenValidFor
+    );
 
     await session.save();
 

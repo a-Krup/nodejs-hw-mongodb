@@ -6,8 +6,6 @@ import {
   deleteContact as deleteContactService,
 } from "../services/contacts.js";
 
-import createHttpError from "http-errors";
-
 export const getAll = async (req, res, next) => {
   try {
     const { _id: userId } = req.user;
@@ -42,7 +40,10 @@ export const getById = async (req, res, next) => {
     const contact = await getContactById(contactId, userId);
 
     if (!contact) {
-      throw createHttpError(404, "Contact not found");
+      return res.status(404).json({
+        status: 404,
+        data: { message: "Contact not found" },
+      });
     }
 
     res.status(200).json({

@@ -37,43 +37,56 @@ export const loginUser = async (email, password) => {
     throw createHttpError(401, "Invalid email or password");
   }
 
-  const accessTokenValidFor = 15 * 60 * 1000;
+  const accessTokenValidFor = 15 * 60 * 1000; 
   const refreshTokenValidFor = 30 * 24 * 60 * 60 * 1000; 
-
-  const accessToken = jwt.sign({ userId: user._id }, ACCESS_TOKEN_SECRET, {
-    expiresIn: "15m",
-  });
-
-  const refreshToken = jwt.sign({ userId: user._id }, REFRESH_TOKEN_SECRET, {
-    expiresIn: "30d",
-  });
 
   
   await Session.deleteMany({ userId: user._id });
 
+  
   const session = await Session.create({
     userId: user._id,
-    accessToken,
-    refreshToken,
+    accessToken: "",
+    refreshToken: "",
     accessTokenValidUntil: new Date(Date.now() + accessTokenValidFor),
     refreshTokenValidUntil: new Date(Date.now() + refreshTokenValidFor),
   });
+
+  const sessionId = session._id.toString();
+
+  
+  const accessToken = jwt.sign(
+    { userId: user._id, sessionId },
+    ACCESS_TOKEN_SECRET,
+    { expiresIn: "15m" }
+  );
+
+  const refreshToken = jwt.sign(
+    { userId: user._id, sessionId },
+    REFRESH_TOKEN_SECRET,
+    { expiresIn: "30d" }
+  );
+
+  
+  session.accessToken = accessToken;
+  session.refreshToken = refreshToken;
+  await session.save();
 
   return {
     accessToken,
     refreshToken,
     accessTokenValidFor,
     refreshTokenValidFor,
-    sessionId: session._id.toString(),
+    sessionId,
   };
 };
 
 export const refreshUserSession = async (refreshToken) => {
   try {
     const payload = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET);
-    const userId = payload.userId;
+    const { userId, sessionId } = payload;
 
-    const session = await Session.findOne({ userId, refreshToken });
+    const session = await Session.findOne({ userId, _id: sessionId, refreshToken });
     if (!session) {
       throw createHttpError(401, "Session not found or expired");
     }
@@ -85,14 +98,20 @@ export const refreshUserSession = async (refreshToken) => {
     const accessTokenValidFor = 15 * 60 * 1000;
     const refreshTokenValidFor = 30 * 24 * 60 * 60 * 1000;
 
-    const newAccessToken = jwt.sign({ userId }, ACCESS_TOKEN_SECRET, {
-      expiresIn: "15m",
-    });
+    
+    const newAccessToken = jwt.sign(
+      { userId, sessionId },
+      ACCESS_TOKEN_SECRET,
+      { expiresIn: "15m" }
+    );
 
-    const newRefreshToken = jwt.sign({ userId }, REFRESH_TOKEN_SECRET, {
-      expiresIn: "30d",
-    });
+    const newRefreshToken = jwt.sign(
+      { userId, sessionId },
+      REFRESH_TOKEN_SECRET,
+      { expiresIn: "30d" }
+    );
 
+    
     session.accessToken = newAccessToken;
     session.refreshToken = newRefreshToken;
     session.accessTokenValidUntil = new Date(Date.now() + accessTokenValidFor);

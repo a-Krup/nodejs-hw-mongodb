@@ -1,8 +1,9 @@
 export function errorHandler(err, req, res, next) {
-  console.error('Error caught:', err);
-  res.status(err.status || 500).json({
-    status: err.status || 500,
-    message: err.message || 'Something went wrong',
-    data: err.data || err.stack,
-  });
+  console.error("Error caught:", err);
+  const status = err.status || 500;
+  const message = err.message || "Something went wrong";
+
+  const response = { status, message };
+
+  res.status(status).json(response);
 }

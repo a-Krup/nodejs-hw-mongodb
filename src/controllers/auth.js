@@ -204,6 +204,15 @@ export const sendResetEmail = async (req, res, next) => {
       },
     });
 
+    // Перевірка з’єднання з SMTP сервером
+    transporter.verify((error, success) => {
+      if (error) {
+        console.log("SMTP server verification failed:", error);
+        return next(httpErrors(500, "SMTP server not available. Please try again later."));
+      }
+      console.log("SMTP server is ready to send messages.");
+    });
+
     // Створюємо листа
     const mailOptions = {
       from: process.env.SMTP_FROM,
@@ -214,7 +223,13 @@ export const sendResetEmail = async (req, res, next) => {
     };
 
     // Відправляємо лист
-    await transporter.sendMail(mailOptions);
+    await transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.log("Error sending email:", error);
+        return next(httpErrors(500, "Failed to send the email, please try again later."));
+      }
+      console.log("Email sent:", info.response);
+    });
 
     res.status(200).json({
       status: 200,

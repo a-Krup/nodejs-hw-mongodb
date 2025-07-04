@@ -197,6 +197,7 @@ export const sendResetEmail = async (req, res, next) => {
     console.log("Sending password reset email to:", user.email);
     console.log("Reset link:", resetLink);
 
+    // Створюємо транспортер для nodemailer
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: process.env.SMTP_PORT,
@@ -205,8 +206,8 @@ export const sendResetEmail = async (req, res, next) => {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASSWORD,
       },
-      logger: true,  // Логування для nodemailer
-      debug: true,   // Логування з деталями протоколу
+      logger: true, // Логування для nodemailer
+      debug: true, // Логування з деталями протоколу
     });
 
     // Перевірка з’єднання з SMTP сервером
@@ -222,9 +223,8 @@ export const sendResetEmail = async (req, res, next) => {
       html: `<p>Click the following link to reset your password:</p><a href="${resetLink}">${resetLink}</a>`,
     };
 
-    // Відправляємо лист асинхронно
+    // Відправка листа
     const info = await transporter.sendMail(mailOptions);
-
     console.log("Email sent successfully:", info);
 
     res.status(200).json({
@@ -238,6 +238,7 @@ export const sendResetEmail = async (req, res, next) => {
     if (err.isJoi || err.message === "User not found!") {
       return next(err);
     }
-    next(httpErrors(500, "Failed to send the email, please try again later."));
+    // Додаємо деталі помилки для кращого дебагу
+    next(httpErrors(500, `Failed to send the email. Detailed error: ${err.message}`));
   }
 };

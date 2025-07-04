@@ -189,6 +189,7 @@ export const sendResetEmail = async (req, res, next) => {
     const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, {
       expiresIn: "5m",
     });
+    console.log("JWT_SECRET:", process.env.JWT_SECRET);
 
     // Формуємо посилання для скиду паролю
     const resetLink = `${process.env.APP_DOMAIN}/reset-password?token=${token}`;

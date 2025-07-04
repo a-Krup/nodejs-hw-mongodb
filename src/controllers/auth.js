@@ -7,7 +7,7 @@ import {
   loginUser,
   refreshUserSession,
   logoutUser,
-  findUserByEmail, // додаємо сервіс для пошуку користувача
+  findUserByEmail, // Додаємо сервіс для пошуку користувача
 } from "../services/auth.js";
 
 const isProd = process.env.NODE_ENV === "production";

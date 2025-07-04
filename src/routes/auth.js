@@ -11,10 +11,13 @@ import authenticate from "../middlewares/authenticate.js";
 
 const router = express.Router();
 
+// Маршрути для реєстрації, логіну, скиду паролю та іншого
 router.post("/register", ctrlWrapper(register));
 router.post("/login", ctrlWrapper(login));
 router.post("/refresh", ctrlWrapper(refreshSession));
 router.post("/logout", authenticate, ctrlWrapper(logout));
-router.post("/send-reset-email", ctrlWrapper(sendResetEmail)); 
+
+// Маршрут для скиду паролю
+router.post("/send-reset-email", ctrlWrapper(sendResetEmail));
 
 export default router;

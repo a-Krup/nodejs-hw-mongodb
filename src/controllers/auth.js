@@ -193,28 +193,26 @@ export const sendResetEmail = async (req, res, next) => {
     // Формуємо посилання для скиду паролю
     const resetLink = `${process.env.APP_DOMAIN}/reset-password?token=${token}`;
 
-    // Створюємо транспортер для nodemailer з використанням Brevo
     const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: process.env.SMTP_PORT,
-      secure: false,  // Для порту 587 використовуємо STARTTLS
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASSWORD,
-      },
-      logger: true,  // Додаємо логування для nodemailer
-      debug: true,   // Логування з деталями протоколу
-    });
+  host: process.env.SMTP_HOST,
+  port: process.env.SMTP_PORT,
+  secure: false, // використовуємо STARTTLS
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASSWORD,
+  },
+  logger: true,  // Додаємо логування для nodemailer
+  debug: true,   // Логування з деталями протоколу
+});
 
-    // Перевірка з’єднання з SMTP сервером
-    transporter.verify((error, success) => {
-      if (error) {
-        console.log("SMTP server verification failed:", error);  // Логуємо помилку
-        return next(httpErrors(500, `SMTP server verification failed: ${error.message}. Please try again later.`));
-      }
-      console.log("SMTP server is ready to send messages.");
-    });
-
+// Перевірка з’єднання з SMTP сервером
+transporter.verify((error, success) => {
+  if (error) {
+    console.log("SMTP server verification failed:", error);  // Логуємо помилку
+    return next(httpErrors(500, `SMTP server verification failed: ${error.message}. Please try again later.`));
+  }
+  console.log("SMTP server is ready to send messages.");
+});
     // Створюємо листа
     const mailOptions = {
       from: process.env.SMTP_FROM,

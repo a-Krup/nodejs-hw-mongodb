@@ -7,7 +7,7 @@ import {
   loginUser,
   refreshUserSession,
   logoutUser,
-  findUserByEmail, // Додаємо сервіс для пошуку користувача
+  findUserByEmail,
 } from "../services/auth.js";
 
 const isProd = process.env.NODE_ENV === "production";
@@ -167,7 +167,6 @@ export const logout = async (req, res, next) => {
 // Новий метод для скиду паролю
 export const sendResetEmail = async (req, res, next) => {
   try {
-    // Валідація email
     const { error } = sendResetEmailSchema.validate(req.body);
     if (error) {
       return res.status(400).json({
@@ -179,43 +178,36 @@ export const sendResetEmail = async (req, res, next) => {
 
     const { email } = req.body;
 
-    // Шукаємо користувача
     const user = await findUserByEmail(email);
     if (!user) {
       return next(httpErrors(404, "User not found!"));
     }
 
-    // Генерація JWT токену з email користувача
     const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, {
       expiresIn: "5m",
     });
     console.log("JWT_SECRET:", process.env.JWT_SECRET);
 
-    // Формуємо посилання для скиду паролю
     const resetLink = `${process.env.APP_DOMAIN}/reset-password?token=${token}`;
 
-    // Логування для дебагу
     console.log("Sending password reset email to:", user.email);
     console.log("Reset link:", resetLink);
 
-    // Створюємо транспортер для nodemailer
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
-      port: process.env.SMTP_PORT,
-      secure: false, // використовуємо STARTTLS
+      port: parseInt(process.env.SMTP_PORT, 10),
+      secure: false,
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASSWORD,
       },
-      logger: true, // Логування для nodemailer
-      debug: true, // Логування з деталями протоколу
+      logger: true,
+      debug: true,
     });
 
-    // Перевірка з’єднання з SMTP сервером
     await transporter.verify();
     console.log("SMTP server is ready to send messages.");
 
-    // Створюємо листа
     const mailOptions = {
       from: process.env.SMTP_FROM,
       to: user.email,
@@ -224,7 +216,6 @@ export const sendResetEmail = async (req, res, next) => {
       html: `<p>Click the following link to reset your password:</p><a href="${resetLink}">${resetLink}</a>`,
     };
 
-    // Відправка листа
     const info = await transporter.sendMail(mailOptions);
     console.log("Email sent successfully:", info);
 
@@ -235,11 +226,9 @@ export const sendResetEmail = async (req, res, next) => {
     });
   } catch (err) {
     console.error("Error during password reset email process:", err);
-    // Якщо проблема з валідацією або з користувачем
     if (err.isJoi || err.message === "User not found!") {
       return next(err);
     }
-    // Додаємо деталі помилки для кращого дебагу
     next(httpErrors(500, `Failed to send the email. Detailed error: ${err.message}`));
   }
 };

@@ -8,24 +8,23 @@ import {
   refreshUserSession,
   logoutUser,
   findUserByEmail,
+  updateUserPassword,
 } from "../services/auth.js";
 
 const isProd = process.env.NODE_ENV === "production";
 
-// Схема для реєстрації
+// Схеми валідації
 const registerSchema = Joi.object({
   name: Joi.string().required(),
   email: Joi.string().email().required(),
   password: Joi.string().required(),
 });
 
-// Схема для логіну
 const loginSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string().required(),
 });
 
-// Схема для скиду паролю
 const sendResetEmailSchema = Joi.object({
   email: Joi.string().email().required(),
 });
@@ -164,7 +163,6 @@ export const logout = async (req, res, next) => {
   }
 };
 
-// Новий метод для скиду паролю
 export const sendResetEmail = async (req, res, next) => {
   try {
     const { error } = sendResetEmailSchema.validate(req.body);
@@ -177,7 +175,6 @@ export const sendResetEmail = async (req, res, next) => {
     }
 
     const { email } = req.body;
-
     const user = await findUserByEmail(email);
     if (!user) {
       return next(httpErrors(404, "User not found!"));
@@ -186,12 +183,8 @@ export const sendResetEmail = async (req, res, next) => {
     const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, {
       expiresIn: "5m",
     });
-    console.log("JWT_SECRET:", process.env.JWT_SECRET);
 
     const resetLink = `${process.env.APP_DOMAIN}/reset-password?token=${token}`;
-
-    console.log("Sending password reset email to:", user.email);
-    console.log("Reset link:", resetLink);
 
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
@@ -201,12 +194,9 @@ export const sendResetEmail = async (req, res, next) => {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASSWORD,
       },
-      logger: true,
-      debug: true,
     });
 
     await transporter.verify();
-    console.log("SMTP server is ready to send messages.");
 
     const mailOptions = {
       from: process.env.SMTP_FROM,
@@ -216,8 +206,7 @@ export const sendResetEmail = async (req, res, next) => {
       html: `<p>Click the following link to reset your password:</p><a href="${resetLink}">${resetLink}</a>`,
     };
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log("Email sent successfully:", info);
+    await transporter.sendMail(mailOptions);
 
     res.status(200).json({
       status: 200,
@@ -225,10 +214,36 @@ export const sendResetEmail = async (req, res, next) => {
       data: {},
     });
   } catch (err) {
-    console.error("Error during password reset email process:", err);
-    if (err.isJoi || err.message === "User not found!") {
-      return next(err);
-    }
     next(httpErrors(500, `Failed to send the email. Detailed error: ${err.message}`));
+  }
+};
+
+export const resetPassword = async (req, res, next) => {
+  try {
+    const { token, password } = req.body;
+
+   let decoded;
+try {
+  decoded = jwt.verify(token, process.env.JWT_SECRET);
+} catch {
+  return next(httpErrors(401, "Token is expired or invalid."));
+}
+
+    const user = await findUserByEmail(decoded.email);
+    if (!user) {
+      return next(httpErrors(404, "User not found!"));
+    }
+
+    await updateUserPassword(user._id, password);
+    await logoutUser(user.sessionId);
+
+    res.status(200).json({
+      status: 200,
+      message: "Password has been successfully reset.",
+      data: {},
+    });
+  } catch (err) {
+    console.error(err); 
+    next(err);
   }
 };

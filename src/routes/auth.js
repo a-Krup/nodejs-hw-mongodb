@@ -5,19 +5,28 @@ import {
   login,
   refreshSession,
   logout,
-  sendResetEmail, 
+  sendResetEmail,
+  resetPassword,
 } from "../controllers/auth.js";
 import authenticate from "../middlewares/authenticate.js";
+import { validateBody } from "../middlewares/validateBody.js";
+import Joi from "joi";
 
 const router = express.Router();
 
-// Маршрути для реєстрації, логіну, скиду паролю та іншого
+const resetPasswordSchema = Joi.object({
+  token: Joi.string().required(),
+  password: Joi.string().min(6).required(),
+});
+
+// Аутентифікація
 router.post("/register", ctrlWrapper(register));
 router.post("/login", ctrlWrapper(login));
 router.post("/refresh", ctrlWrapper(refreshSession));
 router.post("/logout", authenticate, ctrlWrapper(logout));
 
-// Маршрут для скиду паролю
+// Скидання паролю
 router.post("/send-reset-email", ctrlWrapper(sendResetEmail));
+router.post("/reset-pwd", validateBody(resetPasswordSchema), ctrlWrapper(resetPassword));
 
 export default router;

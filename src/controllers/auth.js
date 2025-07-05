@@ -13,7 +13,6 @@ import {
 
 const isProd = process.env.NODE_ENV === "production";
 
-// Схеми валідації
 const registerSchema = Joi.object({
   name: Joi.string().required(),
   email: Joi.string().email().required(),
@@ -214,7 +213,12 @@ export const sendResetEmail = async (req, res, next) => {
       data: {},
     });
   } catch (err) {
-    next(httpErrors(500, `Failed to send the email. Detailed error: ${err.message}`));
+    next(
+      httpErrors(
+        500,
+        `Failed to send the email. Detailed error: ${err.message}`
+      )
+    );
   }
 };
 
@@ -222,12 +226,12 @@ export const resetPassword = async (req, res, next) => {
   try {
     const { token, password } = req.body;
 
-   let decoded;
-try {
-  decoded = jwt.verify(token, process.env.JWT_SECRET);
-} catch {
-  return next(httpErrors(401, "Token is expired or invalid."));
-}
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch {
+      return next(httpErrors(401, "Token is expired or invalid."));
+    }
 
     const user = await findUserByEmail(decoded.email);
     if (!user) {
@@ -243,7 +247,7 @@ try {
       data: {},
     });
   } catch (err) {
-    console.error(err); 
+    console.error(err);
     next(err);
   }
 };

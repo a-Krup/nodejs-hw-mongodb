@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
-import Session from "../models/Session.js"; 
+import Session from "../models/Session.js";
 
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET || "access_secret";
 
@@ -8,7 +8,6 @@ const authenticate = async (req, res, next) => {
   try {
     let token = null;
 
-    
     if (req.headers.authorization?.startsWith("Bearer ")) {
       token = req.headers.authorization.split(" ")[1];
     } else if (req.cookies?.accessToken) {
@@ -23,10 +22,8 @@ const authenticate = async (req, res, next) => {
       });
     }
 
-    
     const decoded = jwt.verify(token, ACCESS_TOKEN_SECRET);
 
-    
     const user = await User.findById(decoded.userId);
     if (!user) {
       return res.status(401).json({
@@ -36,7 +33,6 @@ const authenticate = async (req, res, next) => {
       });
     }
 
-    
     const session = await Session.findById(decoded.sessionId);
     if (!session) {
       return res.status(401).json({
@@ -46,7 +42,6 @@ const authenticate = async (req, res, next) => {
       });
     }
 
-   
     req.user = {
       _id: user._id,
       email: user.email,

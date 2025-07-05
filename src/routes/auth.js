@@ -19,14 +19,16 @@ const resetPasswordSchema = Joi.object({
   password: Joi.string().min(6).required(),
 });
 
-// Аутентифікація
 router.post("/register", ctrlWrapper(register));
 router.post("/login", ctrlWrapper(login));
 router.post("/refresh", ctrlWrapper(refreshSession));
 router.post("/logout", authenticate, ctrlWrapper(logout));
 
-// Скидання паролю
 router.post("/send-reset-email", ctrlWrapper(sendResetEmail));
-router.post("/reset-pwd", validateBody(resetPasswordSchema), ctrlWrapper(resetPassword));
+router.post(
+  "/reset-pwd",
+  validateBody(resetPasswordSchema),
+  ctrlWrapper(resetPassword)
+);
 
 export default router;

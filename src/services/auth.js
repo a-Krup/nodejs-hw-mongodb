@@ -140,7 +140,6 @@ export const refreshUserSession = async (refreshToken) => {
 };
 
 export const logoutUser = async (id, refreshToken = null) => {
-  // Якщо передали sessionId — видаляємо конкретну сесію
   if (refreshToken) {
     const session = await Session.findOne({ _id: id, refreshToken });
     if (!session) {
@@ -148,12 +147,10 @@ export const logoutUser = async (id, refreshToken = null) => {
     }
     await Session.deleteOne({ _id: id });
   } else {
-    // Інакше — видаляємо всі сесії для користувача
     await Session.deleteMany({ userId: id });
   }
 };
 
-// ✅ НОВА ФУНКЦІЯ для оновлення пароля
 export const updateUserPassword = async (userId, newPassword) => {
   const hashedPassword = await bcrypt.hash(newPassword, 10);
   await User.findByIdAndUpdate(userId, { password: hashedPassword });

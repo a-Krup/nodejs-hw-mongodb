@@ -6,6 +6,8 @@ import {
   deleteContact as deleteContactService,
 } from "../services/contacts.js";
 
+import { uploadImageToCloudinary } from "../utils/cloudinary.js";
+
 export const getAll = async (req, res, next) => {
   try {
     const { _id: userId } = req.user;
@@ -59,7 +61,6 @@ export const getById = async (req, res, next) => {
 export const create = async (req, res, next) => {
   try {
     const { _id: userId } = req.user;
-
     const { name, phoneNumber, contactType } = req.body;
 
     if (!name || !phoneNumber || !contactType) {
@@ -71,7 +72,17 @@ export const create = async (req, res, next) => {
       });
     }
 
-    const newContact = await createContactService({ ...req.body, userId });
+    let photoUrl = null;
+    if (req.file) {
+      const uploaded = await uploadImageToCloudinary(req.file.buffer);
+      photoUrl = uploaded.secure_url;
+    }
+
+    const newContact = await createContactService({
+      ...req.body,
+      userId,
+      photo: photoUrl,
+    });
 
     res.status(201).json({
       status: 201,
@@ -87,7 +98,13 @@ export const update = async (req, res, next) => {
   try {
     const { contactId } = req.params;
     const { _id: userId } = req.user;
-    const updateData = req.body;
+
+    const updateData = { ...req.body };
+
+    if (req.file) {
+      const uploaded = await uploadImageToCloudinary(req.file.buffer);
+      updateData.photo = uploaded.secure_url;
+    }
 
     const updatedContact = await updateContactService(
       contactId,

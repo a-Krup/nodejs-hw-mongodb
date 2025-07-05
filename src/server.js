@@ -19,37 +19,32 @@ export function setupServer() {
   console.log("Current NODE_ENV:", process.env.NODE_ENV);
 
   const corsOptions = {
-    origin: process.env.CLIENT_URL || "http://localhost:3000",  // Точний домен для вашого клієнта
-    credentials: true,  // Дозволяє працювати з куками
-    allowedHeaders: ["Content-Type", "Authorization"],  // Дозволяє використовувати певні заголовки
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],  // Дозволяє певні HTTP методи
+    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     preflightContinue: false,
-    optionsSuccessStatus: 204  // Браузери можуть не підтримувати стандартний код 200 для preflight запитів
+    optionsSuccessStatus: 204,
   };
 
-  app.use(cors(corsOptions)); // Використовуємо CORS middleware
+  app.use(cors(corsOptions));
 
-  app.use(pino());  // Логування запитів
+  app.use(pino());
 
-  app.use(express.json());  // Парсинг JSON тіла запитів
-  app.use(cookieParser());  // Парсинг cookies
+  app.use(express.json());
+  app.use(cookieParser());
 
-  // Маршрути
   app.use("/auth", authRouter);
   app.use("/contacts", authenticate, contactsRouter);
 
-  // Головна сторінка
   app.get("/", (req, res) => {
     res.send({ message: "Contacts API is running" });
   });
 
-  // Обробка 404
   app.use(notFoundHandler);
 
-  // Обробка помилок
   app.use(errorHandler);
 
-  // Слухаємо на порту
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);

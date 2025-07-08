@@ -1,3 +1,5 @@
+import path from "path";
+import { fileURLToPath } from "url";
 import express from "express";
 import cors from "cors";
 import pino from "pino-http";
@@ -12,6 +14,10 @@ import { notFoundHandler } from "./middlewares/notFoundHandler.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 
 dotenv.config();
+
+// Для отримання __dirname в ES-модулі
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export function setupServer() {
   const app = express();
@@ -28,11 +34,21 @@ export function setupServer() {
   };
 
   app.use(cors(corsOptions));
-
   app.use(pino());
-
   app.use(express.json());
   app.use(cookieParser());
+
+  // --- Новий код для документації ---
+
+  // Віддаємо docs.html по маршруту /docs
+  app.get("/docs", (req, res) => {
+    res.sendFile(path.join(__dirname, "docs", "docs.html"));
+  });
+
+  // Статика для підвантаження openapi.yaml та favicon тощо
+  app.use("/docs", express.static(path.join(__dirname, "docs")));
+
+  // --- Кінець нового коду ---
 
   app.use("/auth", authRouter);
   app.use("/contacts", authenticate, contactsRouter);
@@ -42,7 +58,6 @@ export function setupServer() {
   });
 
   app.use(notFoundHandler);
-
   app.use(errorHandler);
 
   const PORT = process.env.PORT || 3000;

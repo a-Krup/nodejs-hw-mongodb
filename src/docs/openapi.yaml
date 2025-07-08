@@ -1,0 +1,24 @@
+openapi: 3.1.0
+info:
+  version: 1.0.0
+  title: Stud Contacts
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  description:
+     Це OpenAPI-документація для мого Node.js-додатку
+     
+tags:
+  - name: contacts
+    description: Операції з контактами
+
+servers:
+  #- url: http://localhost:3000
+  - url: https://nodejs-hw-mongodb-5okd.onrender.com
+paths:
+  {}
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer

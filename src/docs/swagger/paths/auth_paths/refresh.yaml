@@ -3,6 +3,8 @@ post:
   tags:
     - auth
   summary: Оновлення сесії (отримання нового access token)
+  security:
+    - bearerAuth: []
   responses:
     200:
       description: Успішне оновлення сесії

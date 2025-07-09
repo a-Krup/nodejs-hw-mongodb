@@ -1,0 +1,12 @@
+post:
+  operationId: logoutUser
+  tags:
+    - auth
+  summary: Вихід з сесії
+  security:
+    - bearerAuth: []
+  responses:
+    204:
+      description: Успішний вихід (без контенту)
+    400:
+      $ref: ../../components/responses/error_response.yaml

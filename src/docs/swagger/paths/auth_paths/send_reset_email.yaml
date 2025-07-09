@@ -1,0 +1,23 @@
+post:
+  operationId: sendResetEmail
+  tags:
+    - auth
+  summary: Відправка листа для скидання пароля
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - email
+          properties:
+            email:
+              type: string
+              format: email
+              example: "john.doe@example.com"
+  responses:
+    '200':
+      description: Email успішно надіслано
+    '400':
+      $ref: ../../components/responses/error_response.yaml

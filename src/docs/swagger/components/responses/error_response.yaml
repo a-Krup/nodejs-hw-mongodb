@@ -1,0 +1,5 @@
+description: Відповідь з помилкою
+content:
+  application/json:
+    schema:
+      $ref: ../schemas/error_response.yaml

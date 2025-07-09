@@ -7,6 +7,9 @@ info:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
 
+servers:
+  - url: https://nodejs-hw-mongodb-5okd.onrender.com
+
 tags:
   - name: auth
     description: Операції, пов'язані з аутентифікацією користувачів
@@ -15,332 +18,68 @@ tags:
   - name: general
     description: Загальні ендпоінти
 
-servers:
-  #- url: http://localhost:3000
-  - url: https://nodejs-hw-mongodb-5okd.onrender.com
-
-security:
-  - bearerAuth: []
-
 paths:
   /:
-    get:
-      operationId: getRoot
-      tags:
-        - general
-      summary: Стартова точка API
-      responses:
-        '200':
-          description: API працює
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-        '400':
-          description: Некоректний запит
+    $ref: ./swagger/paths/root.yaml
 
   /auth/register:
-    post:
-      operationId: registerUser
-      tags:
-        - auth
-      summary: Реєстрація нового користувача
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - email
-                - password
-              properties:
-                email:
-                  type: string
-                  format: email
-                password:
-                  type: string
-                  minLength: 6
-      responses:
-        '201':
-          description: Користувача створено
-        '400':
-          description: Некоректні дані
+    $ref: ./swagger/paths/auth_paths/register.yaml
 
   /auth/login:
-    post:
-      operationId: loginUser
-      tags:
-        - auth
-      summary: Логін користувача
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - email
-                - password
-              properties:
-                email:
-                  type: string
-                  format: email
-                password:
-                  type: string
-      responses:
-        '200':
-          description: Успішний логін
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  token:
-                    type: string
-        '400':
-          description: Некоректний запит
-        '401':
-          description: Невірний логін або пароль
+    $ref: ./swagger/paths/auth_paths/login.yaml
 
   /auth/refresh:
-    post:
-      operationId: refreshSession
-      tags:
-        - auth
-      summary: Оновлення сесії
-      responses:
-        '200':
-          description: Оновлення успішне
-        '401':
-          description: Неавторизований
+    $ref: ./swagger/paths/auth_paths/refresh.yaml
 
   /auth/logout:
-    post:
-      operationId: logoutUser
-      tags:
-        - auth
-      summary: Вихід користувача
-      security:
-        - bearerAuth: []
-      responses:
-        '204':
-          description: Успішний вихід
-        '401':
-          description: Неавторизований
+    $ref: ./swagger/paths/auth_paths/logout.yaml
 
   /auth/send-reset-email:
-    post:
-      operationId: sendResetEmail
-      tags:
-        - auth
-      summary: Відправка листа для скидання пароля
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - email
-              properties:
-                email:
-                  type: string
-                  format: email
-      responses:
-        '200':
-          description: Лист відправлено
-        '400':
-          description: Некоректний запит
+    $ref: ./swagger/paths/auth_paths/send_reset_email.yaml
 
   /auth/reset-pwd:
-    post:
-      operationId: resetPassword
-      tags:
-        - auth
-      summary: Скидання пароля
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - token
-                - password
-              properties:
-                token:
-                  type: string
-                password:
-                  type: string
-                  minLength: 6
-      responses:
-        '200':
-          description: Пароль змінено
-        '400':
-          description: Некоректний запит
+    $ref: ./swagger/paths/auth_paths/reset_pwd.yaml
 
   /contacts:
-    get:
-      operationId: getAllContacts
-      tags:
-        - contacts
-      summary: Отримати всі контакти
-      security:
-        - bearerAuth: []
-      responses:
-        '200':
-          description: Список контактів
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Contact'
-        '401':
-          description: Неавторизований
-    post:
-      operationId: createContact
-      tags:
-        - contacts
-      summary: Створити контакт
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              required:
-                - name
-                - email
-                - phone
-              properties:
-                name:
-                  type: string
-                email:
-                  type: string
-                  format: email
-                phone:
-                  type: string
-                photo:
-                  type: string
-                  format: binary
-      responses:
-        '201':
-          description: Контакт створено
-        '400':
-          description: Некоректні дані
-        '401':
-          description: Неавторизований
+    $ref: ./swagger/paths/contacts/index.yaml
 
   /contacts/{contactId}:
-    get:
-      operationId: getContactById
-      tags:
-        - contacts
-      summary: Отримати контакт за ID
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: contactId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Деталі контакту
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Contact'
-        '401':
-          description: Неавторизований
-        '404':
-          description: Контакт не знайдено
-    patch:
-      operationId: updateContact
-      tags:
-        - contacts
-      summary: Оновити контакт
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: contactId
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
+    parameters:
+      - name: contactId
+        in: path
         required: true
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                email:
-                  type: string
-                  format: email
-                phone:
-                  type: string
-                photo:
-                  type: string
-                  format: binary
-      responses:
-        '200':
-          description: Контакт оновлено
-        '400':
-          description: Некоректні дані
-        '401':
-          description: Неавторизований
-        '404':
-          description: Контакт не знайдено
+        schema:
+          type: string
+          description: Ідентифікатор контакту
+    get:
+      $ref: ./swagger/paths/contacts/contact_id/get_contact_by_id.yaml
+    patch:
+      $ref: ./swagger/paths/contacts/contact_id/update_contact.yaml
     delete:
-      operationId: deleteContact
-      tags:
-        - contacts
-      summary: Видалити контакт
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: contactId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '204':
-          description: Контакт видалено
-        '401':
-          description: Неавторизований
-        '404':
-          description: Контакт не знайдено
+      $ref: ./swagger/paths/contacts/contact_id/delete_contact.yaml
 
 components:
+  schemas:
+    Contact:
+      $ref: ./swagger/components/schemas/Contact.yaml
+    User:
+      $ref: ./swagger/components/schemas/User.yaml
+    Session:
+      $ref: ./swagger/components/schemas/Session.yaml
+    ErrorResponse:
+      $ref: ./swagger/components/schemas/error_response.yaml
+
+  responses:
+    SuccessResponse:
+      $ref: ./swagger/components/responses/success_response.yaml
+    ErrorResponse:
+      $ref: ./swagger/components/responses/error_response.yaml
+
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
-  schemas:
-    Contact:
-      type: object
-      properties:
-        _id:
-          type: string
-        name:
-          type: string
-        email:
-          type: string
-          format: email
-        phone:
-          type: string
-        photoURL:
-          type: string
-          nullable: true
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: []

@@ -1,0 +1,23 @@
+type: object
+required:
+  - userId
+  - accessToken
+  - refreshToken
+  - accessTokenValidUntil
+  - refreshTokenValidUntil
+properties:
+  userId:
+    type: string
+    example: "64a9e1a8f4b8d9b1c1234567"
+  accessToken:
+    type: string
+    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  refreshToken:
+    type: string
+    example: "dGhpc2lzYXJlZnJlc2h0b2tlbg=="
+  accessTokenValidUntil:
+    type: string
+    format: date-time
+  refreshTokenValidUntil:
+    type: string
+    format: date-time

@@ -1,0 +1,28 @@
+post:
+  operationId: resetPassword
+  tags:
+    - auth
+  summary: Скидання пароля за токеном
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - token
+            - password
+          properties:
+            token:
+              type: string
+              example: "jwt.token.here"
+            password:
+              type: string
+              example: "newPassword123"
+  responses:
+    200:
+      description: Пароль успішно скинуто
+    401:
+      $ref: ../../components/responses/error_response.yaml
+    404:
+      $ref: ../../components/responses/error_response.yaml

@@ -1,0 +1,106 @@
+get:
+  operationId: getContacts
+  tags:
+    - contacts
+  summary: Отримати всі контакти користувача
+  parameters:
+    - name: page
+      in: query
+      schema:
+        type: integer
+      required: false
+      description: Номер сторінки (за замовчуванням 1)
+    - name: perPage
+      in: query
+      schema:
+        type: integer
+      required: false
+      description: Кількість контактів на сторінці (за замовчуванням 10)
+    - name: sortBy
+      in: query
+      schema:
+        type: string
+      required: false
+      description: Поле для сортування (наприклад "name")
+    - name: sortOrder
+      in: query
+      schema:
+        type: string
+        enum: [asc, desc]
+      required: false
+      description: Порядок сортування (asc або desc)
+  security:
+    - bearerAuth: []
+  responses:
+    '200':
+      description: Список контактів
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: integer
+                example: 200
+              message:
+                type: string
+                example: "Successfully found contacts!"
+              data:
+                type: array
+                items:
+                  $ref: ../../components/schemas/Contact.yaml
+    '401':
+      $ref: ../../components/responses/error_response.yaml
+
+post:
+  operationId: createContact
+  tags:
+    - contacts
+  summary: Створити новий контакт
+  security:
+    - bearerAuth: []
+  requestBody:
+    required: true
+    content:
+      multipart/form-data:
+        schema:
+          type: object
+          required:
+            - name
+            - phoneNumber
+            - contactType
+          properties:
+            name:
+              type: string
+            phoneNumber:
+              type: string
+            email:
+              type: string
+            isFavourite:
+              type: boolean
+            contactType:
+              type: string
+              enum: [work, home, personal]
+            photo:
+              type: string
+              format: binary
+  responses:
+    '201':
+      description: Контакт успішно створено
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: integer
+                example: 201
+              message:
+                type: string
+                example: "Successfully created a contact!"
+              data:
+                $ref: ../../components/schemas/Contact.yaml
+    '400':
+      $ref: ../../components/responses/error_response.yaml
+    '401':
+      $ref: ../../components/responses/error_response.yaml

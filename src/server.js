@@ -48,7 +48,7 @@ export function setupServer() {
 
   
   const swaggerDocument = JSON.parse(
-    fs.readFileSync(path.join(__dirname, "src", "docs", "swagger.json"), "utf8")
+    fs.readFileSync(path.join(__dirname, "docs", "swagger.json"), "utf8")
   );
 
   app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));

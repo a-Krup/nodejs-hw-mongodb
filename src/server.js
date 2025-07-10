@@ -6,6 +6,9 @@ import pino from "pino-http";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 
+import YAML from "yamljs";
+import swaggerUi from "swagger-ui-express";
+
 import contactsRouter from "./routes/contacts.js";
 import authRouter from "./routes/auth.js";
 import authenticate from "./middlewares/authenticate.js";
@@ -15,7 +18,6 @@ import { errorHandler } from "./middlewares/errorHandler.js";
 
 dotenv.config();
 
-// Для отримання __dirname в ES-модулі
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -38,17 +40,17 @@ export function setupServer() {
   app.use(express.json());
   app.use(cookieParser());
 
-  // --- Новий код для документації ---
-
-  // Віддаємо docs.html по маршруту /docs
   app.get("/docs", (req, res) => {
     res.sendFile(path.join(__dirname, "docs", "docs.html"));
   });
 
-  // Статика для підвантаження openapi.yaml та favicon тощо
   app.use("/docs", express.static(path.join(__dirname, "docs")));
 
-  // --- Кінець нового коду ---
+  const swaggerDocument = YAML.load(
+    path.join(__dirname, "docs", "openapi.yaml")
+  );
+
+  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
   app.use("/auth", authRouter);
   app.use("/contacts", authenticate, contactsRouter);

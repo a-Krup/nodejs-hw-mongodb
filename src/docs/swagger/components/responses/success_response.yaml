@@ -9,7 +9,12 @@ content:
           example: 200
         message:
           type: string
-          example: "Успішно виконано"
+          example: Успішно виконано
         data:
-          type: object
-          nullable: true
+          description: Основна інформація, яку повертає сервер. Це може бути новостворений обʼєкт, список елементів, підтвердження дії або інші дані — залежно від запиту.
+          anyOf:
+            - type: object
+            - type: array
+            - type: string
+            - type: boolean
+            - type: number

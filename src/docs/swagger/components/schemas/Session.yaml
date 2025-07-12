@@ -18,6 +18,8 @@ properties:
   accessTokenValidUntil:
     type: string
     format: date-time
+    example: "2025-07-12T10:00:00Z"
   refreshTokenValidUntil:
     type: string
     format: date-time
+    example: "2025-07-19T10:00:00Z"

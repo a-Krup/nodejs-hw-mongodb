@@ -6,7 +6,7 @@ post:
   security:
     - bearerAuth: []
   responses:
-    200:
+    '200':
       description: Успішне оновлення сесії
       content:
         application/json:
@@ -20,10 +20,6 @@ post:
                 type: string
                 example: "Successfully refreshed a session!"
               data:
-                type: object
-                properties:
-                  accessToken:
-                    type: string
-                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-    401:
+                $ref: ../../components/schemas/Session.yaml
+    '401':
       $ref: ../../components/responses/error_response.yaml

@@ -35,10 +35,6 @@ post:
                 type: string
                 example: "Successfully logged in a user!"
               data:
-                type: object
-                properties:
-                  accessToken:
-                    type: string
-                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                $ref: ../../components/schemas/Session.yaml
     '400':
       $ref: ../../components/responses/error_response.yaml

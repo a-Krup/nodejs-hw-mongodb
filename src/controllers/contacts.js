@@ -23,18 +23,19 @@ export const getAll = async (req, res, next) => {
       sortBy,
       sortOrder
     );
-console.log("DEBUG getAllContacts result:", JSON.stringify(result, null, 2));
 
     res.status(200).json({
       status: 200,
       message: "Successfully found contacts!",
-      data: result.data,
-      page: result.page,
-      perPage: result.perPage,
-      totalItems: result.totalItems,
-      totalPages: result.totalPages,
-      hasPreviousPage: result.hasPreviousPage,
-      hasNextPage: result.hasNextPage,
+      data: {
+        data: result.data,
+        page: result.page,
+        perPage: result.perPage,
+        totalItems: result.totalItems,
+        totalPages: result.totalPages,
+        hasPreviousPage: result.hasPreviousPage,
+        hasNextPage: result.hasNextPage,
+      },
     });
   } catch (err) {
     next(err);

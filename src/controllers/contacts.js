@@ -23,6 +23,7 @@ export const getAll = async (req, res, next) => {
       sortBy,
       sortOrder
     );
+console.log("DEBUG getAllContacts result:", JSON.stringify(result, null, 2));
 
     res.status(200).json({
       status: 200,
